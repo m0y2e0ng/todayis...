@@ -38,8 +38,29 @@ html, body {
 	height: 100%;
 }
 
-.today-title {
+/* today / tomorrow / yesterday / next month / last month 버튼 묶음 */
+.day-nav {
 	margin-bottom: 64px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 2.6; /* 행간 약 2배 */
+}
+
+.day-link {
+	font-family: 'ABCArealMono', monospace;
+	font-weight: 500;
+	font-size: 21px;
+	color: #000000;
+	letter-spacing: -0.01em;
+	cursor: pointer;
+}
+
+.day-link:hover {
+	text-decoration: underline;
+}
+
+.today-title {
 	font-family: 'ABCArealMono', monospace;
 	font-weight: 500; /* 모노 미디엄 */
 	font-size: 21px;
@@ -52,45 +73,12 @@ html, body {
 	justify-content: center;
 }
 
-.dots {
-	display: inline-flex;
-	margin-left: 2px;
-}
-
-.dot {
-	display: inline-block;
-	animation: dotBounce 2s infinite ease-in-out;
-}
-
-.dot:nth-child(1) {
-	animation-delay: 0s;
-}
-
-.dot:nth-child(2) {
-	animation-delay: 0.25s;
-}
-
-.dot:nth-child(3) {
-	animation-delay: 0.5s;
-}
-
-@keyframes dotBounce {
-	0%, 70%, 100% {
-		transform: translateY(0);
-	}
-	35% {
-		transform: translateY(-2.5px);
-	}
-}
-
-#circle-container {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 72vmin;
-	height: 72vmin;
-	max-width: 78vw;
-	max-height: 78vw;
+	/* 위아래 글자가 늘어난 만큼 화면 높이 안에 들어오도록 제한 */
+	width: min(72vmin, 78vw, calc(100dvh - 490px));
+	height: min(72vmin, 78vw, calc(100dvh - 490px));
 	aspect-ratio: 1 / 1;
 	cursor: pointer;
 }
@@ -105,71 +93,35 @@ html, body {
 }
 
 #bottom-container {
-	position: relative;
 	margin-top: 64px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: flex-start;
+	gap: 12px;
+}
+
+/* done! — 자리는 항상 차지하고 마지막 날에만 보임 (레이아웃 밀림 방지) */
+.done-button {
+	visibility: hidden;
+	color: var(--done-color, #000000);
+}
+
+.done-button:hover {
+	color: var(--done-hover, #000000);
+}
+
+.done-button.visible {
+	visibility: visible;
 }
 
 .date-display {
 	font-family: 'ABCArealMono', monospace;
-	font-weight: 500; /* 모노 미디엄 */
+	font-weight: 500;
 	font-size: 21px;
 	color: #000000;
 	letter-spacing: -0.01em;
 	text-align: center;
 	user-select: none;
-	line-height: 1.2;
 }
 
-.next-month-wrapper {
-	position: absolute;
-	top: calc(100% + 14px);
-	left: 50%;
-	transform: translateX(-50%) translateY(4px);
-	white-space: nowrap;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
-}
-
-.next-month-wrapper.visible {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-	transform: translateX(-50%) translateY(0);
-}
-
-.next-month-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	font-family: 'ABCArealMono', monospace;
-	font-weight: 500;
-	font-size: 19px;
-	color: #000000;
-	text-decoration: none;
-	cursor: pointer;
-	padding: 6px 12px;
-	border-radius: 6px;
-	background-color: transparent;
-	transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
-}
-
-.next-month-link:hover {
-	background-color: rgba(0, 0, 0, 0.06);
-	color: #000000;
-}
-
-.next-month-link .arrow {
-	display: inline-block;
-	transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.next-month-link:hover .arrow {
-	transform: translateX(4px);
-}
 
