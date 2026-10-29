@@ -5,22 +5,17 @@
 	<title>Calendar — Sep 2026</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50.000' fill='%23457B9D'/><circle cx='50' cy='50' r='48.333' fill='%234ECDC4'/><circle cx='50' cy='50' r='46.667' fill='%23D4A5A5'/><circle cx='50' cy='50' r='45.000' fill='%23FF3B30'/><circle cx='50' cy='50' r='43.333' fill='%23AF52DE'/><circle cx='50' cy='50' r='41.667' fill='%2300F5D4'/><circle cx='50' cy='50' r='40.000' fill='%235856D6'/><circle cx='50' cy='50' r='38.333' fill='%23FF006E'/><circle cx='50' cy='50' r='36.667' fill='%238338EC'/><circle cx='50' cy='50' r='35.000' fill='%237209B7'/><circle cx='50' cy='50' r='33.333' fill='%23F72585'/><circle cx='50' cy='50' r='31.667' fill='%23F4A261'/><circle cx='50' cy='50' r='30.000' fill='%234CC9F0'/><circle cx='50' cy='50' r='28.333' fill='%23FF9500'/><circle cx='50' cy='50' r='26.667' fill='%2334C759'/><circle cx='50' cy='50' r='25.000' fill='%2306D6A0'/><circle cx='50' cy='50' r='23.333' fill='%23D4A5A5'/><circle cx='50' cy='50' r='21.667' fill='%23457B9D'/><circle cx='50' cy='50' r='20.000' fill='%23118AB2'/><circle cx='50' cy='50' r='18.333' fill='%23FFCC00'/><circle cx='50' cy='50' r='16.667' fill='%23D4A5A5'/><circle cx='50' cy='50' r='15.000' fill='%23FFEEAD'/><circle cx='50' cy='50' r='13.333' fill='%2305D550'/><circle cx='50' cy='50' r='11.667' fill='%234361EE'/><circle cx='50' cy='50' r='10.000' fill='%23D4A5A5'/><circle cx='50' cy='50' r='8.333' fill='%238338EC'/><circle cx='50' cy='50' r='6.667' fill='%23AF52DE'/><circle cx='50' cy='50' r='5.000' fill='%2300BBF9'/><circle cx='50' cy='50' r='3.333' fill='%237209B7'/><circle cx='50' cy='50' r='1.667' fill='%2334C759'/></svg>">
-	<link rel="stylesheet" href="style.css?v=23">
+	<link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
 	<div id="app-container">
 		<div class="day-nav">
-			<div id="nav-today" class="today-title day-link">today is...</div>
-			<div id="nav-tomorrow" class="day-link">tomorrow is...</div>
-			<div id="nav-yesterday" class="day-link">yesterday is...</div>
-			<div id="nav-next-month" class="day-link">next month is...</div>
-			<div id="nav-last-month" class="day-link">last month is...</div>
+			<div id="hint" class="today-title">today is...</div>
 		</div>
 		<div id="circle-container">
 			<div id="main-circle" class="circle-wrapper"></div>
 		</div>
 		<div id="bottom-container">
-			<div id="date-display" class="date-display"></div>
 			<div id="done-button" class="day-link done-button">done!</div>
 		</div>
 	</div>
@@ -99,16 +94,34 @@
 		let yearColors = getYearCalendarColors(currentYear);
 		let colors = yearColors[currentMonth];
 
-		const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-		const months   = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-		function formatDate(dayNum) {
-			const d = new Date(currentYear, currentMonth, dayNum);
-			return `${weekdays[d.getDay()]}, ${months[currentMonth]} ${dayNum}`;
+		// 숫자를 영어 단어로 (3 → three, 21 → twenty-one)
+		function numberWord(n) {
+			const ones = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+				'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+			const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+			if (n < 20) return ones[n];
+			if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? '-' + ones[n % 10] : '');
+			return numberWord(Math.floor(n / 100)) + ' hundred' + (n % 100 ? ' ' + numberWord(n % 100) : '');
 		}
 
-		const circleWrapper    = document.getElementById('main-circle');
-		const dateDisplay      = document.getElementById('date-display');
+		// 실제 오늘과의 거리 → 한 줄 설명 (숫자 없이)
+		function hintFor(dayNum) {
+			const now = new Date();
+			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const target = new Date(currentYear, currentMonth, dayNum);
+			const diff = Math.round((target - today) / 86400000);
+			if (diff === 0) return 'today is...';
+			if (diff === 1) return 'tomorrow is...';
+			if (diff === 2) return 'the day after tomorrow is...';
+			if (diff === -1) return 'yesterday was...';
+			if (diff === -2) return 'the day before yesterday was...';
+			return diff > 0
+				? `${numberWord(diff)} days later is...`
+				: `${numberWord(-diff)} days ago was...`;
+		}
+
+		const circleWrapper = document.getElementById('main-circle');
+		const hint          = document.getElementById('hint');
 
 		function render() {
 			// 원 그리기
@@ -132,62 +145,20 @@
 			}
 			circleWrapper.appendChild(svg);
 
-			// 날짜 텍스트
-			dateDisplay.textContent = formatDate(currentDay);
+			// 위 한 줄: 오늘과의 거리
+			hint.textContent = hintFor(currentDay);
 
 			// 마지막 날까지 다 채우면 done! 노출
 			document.getElementById('done-button').classList.toggle('visible', currentDay === totalDays);
-
 		}
 
-		// 원 클릭 → 다음 날짜
+		// 원 클릭 → 다음 날짜 (마지막 날 다음은 1일로)
 		document.getElementById('circle-container').addEventListener('click', () => {
 			currentDay = currentDay < totalDays ? currentDay + 1 : 1;
 			render();
 		});
 
 		const monthFiles = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-
-		// today is → 오늘로 이동 (오늘이 다른 달이면 그 달 파일로 이동)
-		function goToday() {
-			const now = new Date();
-			if (now.getFullYear() === FIXED_YEAR && now.getMonth() === FIXED_MONTH) {
-				currentDay = now.getDate();
-				render();
-			} else {
-				location.href = `${monthFiles[now.getMonth()]}.html#${now.getDate()}`;
-			}
-		}
-
-		// tomorrow is → 내일 (마지막 날이면 다음 달 1일을 새 탭으로)
-		function goTomorrow() {
-			if (currentDay < totalDays) {
-				currentDay++;
-				render();
-			} else {
-				window.open(`${monthFiles[(FIXED_MONTH + 1) % 12]}.html#1`, '_blank');
-			}
-		}
-
-		// yesterday is → 어제 (1일이면 이전 달 마지막 날을 새 탭으로)
-		function goYesterday() {
-			if (currentDay > 1) {
-				currentDay--;
-				render();
-			} else {
-				const prevM = (FIXED_MONTH + 11) % 12;
-				window.open(`${monthFiles[prevM]}.html#${getDaysInMonth(FIXED_YEAR, prevM)}`, '_blank');
-			}
-		}
-
-		document.getElementById('nav-today').addEventListener('click', goToday);
-		document.getElementById('nav-tomorrow').addEventListener('click', goTomorrow);
-		document.getElementById('nav-yesterday').addEventListener('click', goYesterday);
-
-		// next month is → 다음 달 1일을 새 탭으로
-		document.getElementById('nav-next-month').addEventListener('click', () => {
-			window.open(`${monthFiles[(FIXED_MONTH + 1) % 12]}.html#1`, '_blank');
-		});
 
 		// done! 색: 이 달 첫 원 색 / 호버 시 다음 달 첫 원 색
 		const doneButton = document.getElementById('done-button');
@@ -198,15 +169,6 @@
 		doneButton.addEventListener('click', () => {
 			window.open(`${monthFiles[(FIXED_MONTH + 1) % 12]}.html#1`, '_blank');
 		});
-
-		// last month is → 이전 달 1일을 새 탭으로
-		document.getElementById('nav-last-month').addEventListener('click', () => {
-			window.open(`${monthFiles[(FIXED_MONTH + 11) % 12]}.html#1`, '_blank');
-		});
-
-		// 날짜 텍스트 클릭 → 오늘로 이동
-		dateDisplay.style.cursor = 'pointer';
-		dateDisplay.addEventListener('click', goToday);
 
 		render();
 	</script>
